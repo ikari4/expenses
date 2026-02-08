@@ -1,0 +1,21 @@
+/* styles.css */
+
+#outerDiv {
+    display: flex;
+    flex-direction: column;
+    width: 390px;
+    align-items: center;
+}
+
+#headerDiv {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#mainDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
