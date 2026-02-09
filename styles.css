@@ -11,11 +11,27 @@
     display: flex;
     flex-direction: row;
     gap: 10px;
-    margin-bottom: 10px;
+    margin: 25px 0px;
 }
 
 #mainDiv {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.input {
+    height: 40px;
+    font-size: 20px;
+}
+
+button {
+    height: 40px;
+    width: 110px;
+    font-size: 20px;
+}
+
+.saveBtn {
+    align-self: center;
+    margin: 25px 0px;
 }

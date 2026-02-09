@@ -20,7 +20,7 @@ async function postCategories(categoryDropdown) {
 
 // main script begins here
 const addExpenseBtn = document.getElementById("addExpenseBtn");
-const viewExpensesBtn = document.getElementById("viewExpensesBtn");
+const viewExpenseBtn = document.getElementById("viewExpenseBtn");
 const addCategoryBtn = document.getElementById("addCategoryBtn");
 const mainDiv = document.getElementById("mainDiv");
 
@@ -28,13 +28,18 @@ const mainDiv = document.getElementById("mainDiv");
 addExpenseBtn.addEventListener("click", () => {
     // clear mainDiv
     mainDiv.textContent = "";
+
     // setup date entry
     const dateEntry = document.createElement("input");
     dateEntry.type = "date";
+    dateEntry.value = new Date().toISOString().split("T")[0];
+    dateEntry.className = "input";
     mainDiv.appendChild(dateEntry);
+
     // setup list of categories
     const categoryDropdown = document.createElement("select");
     categoryDropdown.innerHTML = "";
+    categoryDropdown.className = "input";
     const defaultOption = document.createElement("option");
     defaultOption.value = "";
     defaultOption.textContent = "Select a category";
@@ -43,22 +48,30 @@ addExpenseBtn.addEventListener("click", () => {
     categoryDropdown.appendChild(defaultOption);
     mainDiv.appendChild(categoryDropdown);
     postCategories(categoryDropdown);
+
     // setup amount entry
     const amount = document.createElement("input");
-    amount.type = "number";
+    amount.type = "text";
+    amount.inputMode = "decimal";
     amount.step = "0.01";
     amount.min = "0";
     amount.placeholder = "$0.00";
+    amount.className = "input";
     mainDiv.appendChild(amount);
+
     // setup notes
     const notes = document.createElement("input");
     notes.type = "text";
     notes.placeholder = "Add a note";
+    notes.className = "input";
     mainDiv.appendChild(notes);
+
     // save button
     const saveBtn = document.createElement("button");
-    saveBtn.textContent = "Save Expense";
+    saveBtn.textContent = "Save";
+    saveBtn.classList = "saveBtn";
     mainDiv.appendChild(saveBtn);
+
     // event listener for saving
     saveBtn.addEventListener("click", async () => {
         const expenseData = {
@@ -67,6 +80,7 @@ addExpenseBtn.addEventListener("click", () => {
             amount: parseFloat(amount.value),
             notes: notes.value
         };
+
         // validation
         if (!expenseData.date) {
             alert("Please select a date.");
@@ -80,6 +94,7 @@ addExpenseBtn.addEventListener("click", () => {
             alert("Please enter a valid amount.");
             return;
         }
+
         // send to backend
         const saveRes = await fetch("/api/saveExpense", {
             method: "POST",
@@ -94,3 +109,4 @@ addExpenseBtn.addEventListener("click", () => {
     });
 });
 
+addExpenseBtn.click();
