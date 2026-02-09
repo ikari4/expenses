@@ -21,7 +21,7 @@ async function postCategories(categoryDropdown) {
 // main script begins here
 const addExpenseBtn = document.getElementById("addExpenseBtn");
 const viewExpenseBtn = document.getElementById("viewExpenseBtn");
-const addCategoryBtn = document.getElementById("addCategoryBtn");
+const editBtn = document.getElementById("editBtn");
 const mainDiv = document.getElementById("mainDiv");
 
 // event listenter for addExpenseBtn
@@ -104,7 +104,7 @@ addExpenseBtn.addEventListener("click", () => {
             body: JSON.stringify(expenseData)
         });
         const result = await saveRes.json();
-        mainDiv.textContent = "";
+        addExpenseBtn.click();
         alert("Expense saved!");
     });
 });

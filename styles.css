@@ -20,7 +20,7 @@
     gap: 10px;
 }
 
-.input {
+.input, .input option {
     height: 40px;
     font-size: 20px;
 }
