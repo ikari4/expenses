@@ -1,5 +1,17 @@
 /* styles.css */
 
+.inputRow {
+    display: flex;
+    width: 390px;
+    flex-direction: column;
+    align-items: center;
+}
+
+#loginModal input {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
 #outerDiv {
     display: flex;
     flex-direction: column;

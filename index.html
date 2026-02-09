@@ -10,12 +10,22 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="outerDiv">
-        <div id="headerDiv">
-            <button id="addExpenseBtn">Add $</button>
-            <button id="viewExpenseBtn">Review</button>
-            <button id="editBtn">Edit</button>
+    <div id="loginModal" style="display:none">
+        <div class="inputRow">
+            <label for="inputEmail">email: </label>
+            <input id="inputEmail" type="email" placeholder="email" required>
         </div>
+        <div class="inputRow">
+            <label for="inputPassword">password: </label>
+            <input id="inputPassword" type="password" placeholder="password" required>
+        </div>
+        <div class="inputRow">
+            <button id="loginBtn">Login</button>
+        </div>
+        <p id="loginError" style="color:red;"></p>
+    </div>
+    <div id="outerDiv">
+        <div id="headerDiv"></div>
         <div id="mainDiv"></div>
     </div>
 
