@@ -1,4 +1,4 @@
-// saveExpense.js
+// savePayment.js
 
 import { createClient } from "@libsql/client";
 
@@ -9,12 +9,12 @@ const turso = createClient({
 
 export default async function handler(req, res) {
     if (req.method === "POST") {
-        const { date, category_id, payment_id, amount, notes, user_id } = req.body;
+        const { payment } = req.body;
 
         try {
             await turso.execute(
-                "INSERT INTO expenses (date, category_id, payment_id, amount, notes, user_id) VALUES (?, ?, ?, ?, ?, ?)",
-                [date, category_id, payment_id, amount, notes, user_id]
+                "INSERT INTO payment_types (payment) VALUES (?)",
+                [payment]
             );
 
             res.status(200).json({ success: true });

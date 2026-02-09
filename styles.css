@@ -3,6 +3,7 @@
 .inputRow {
     display: flex;
     width: 390px;
+    font-size: 20px;
     flex-direction: column;
     align-items: center;
 }
@@ -45,5 +46,25 @@ button {
 
 .saveBtn {
     align-self: center;
-    margin: 25px 0px;
+    margin: 25px 5px;
+}
+
+.currencyWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.currencyWrapper::before {
+    content: "$";
+    position: absolute;
+    font-size: 20px;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #666;
+}
+
+.currencyInput {
+    padding-left: 20px;
 }

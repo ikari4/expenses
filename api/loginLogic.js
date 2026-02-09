@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   try {
     const result = await client.execute({
-        sql: "SELECT user_id, username, email, password FROM users WHERE email = ? LIMIT 1",
+        sql: "SELECT id, username, email, password FROM users WHERE email = ? LIMIT 1",
         args: [inputEmail]
     });
 
