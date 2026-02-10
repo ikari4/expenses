@@ -36,6 +36,42 @@ async function displayPaymentTypes(paymentTypeDropdown) {
     
 } 
 
+// displayExpenses function
+function displayExpenses(expensesToView) {
+    lowerDiv.innerHTML= "";
+    const table = document.createElement("table");
+    table.className = "expenseTable";
+    const headerRow = document.createElement("tr");
+    ["Date", "Amount", "Category", "Payment"].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    // each expense info goes into a single table cell
+    expensesToView.forEach(expense => {
+        const row = document.createElement("tr");
+        
+        // format amount to have two decimal places
+        const formattedAmount = `$${Number(expense.amount).toFixed(2)}`;
+        const values = [
+            expense.date,
+            formattedAmount,
+            expense.category,
+            expense.payment
+        ];
+         values.forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });       
+        table.appendChild(row);
+    });
+
+    lowerDiv.appendChild(table);
+}
+
 // main script begins here
 const loginModal = document.getElementById("loginModal");
 const loginBtn = document.getElementById("loginBtn");
@@ -45,6 +81,7 @@ const viewExpenseBtn = document.createElement("button");
 const editBtn = document.createElement("button");
 const headerDiv = document.getElementById("headerDiv");
 const mainDiv = document.getElementById("mainDiv");
+const lowerDiv = document.getElementById("lowerDiv");
 
 // on page load
 window.addEventListener("load", async() => {
@@ -113,6 +150,16 @@ window.addEventListener("load", async() => {
         amountWrapper.appendChild(amount);
         mainDiv.appendChild(amountWrapper);
 
+        amount.addEventListener("blur", () => {
+            if (!amount.value) return;
+            const num = parseFloat(amount.value.replace(/[^0-9.]/g, ""));
+            if (!isNaN(num)) {
+                amount.value = num.toFixed(2);
+            } else {
+                amount.value = "";
+            }
+        });
+
         // setup notes
         const notes = document.createElement("input");
         notes.type = "text";
@@ -134,7 +181,7 @@ window.addEventListener("load", async() => {
                 date: dateEntry.value,
                 category_id: categoryDropdown.value,
                 payment_id: paymentTypeDropdown.value,
-                amount: parseFloat(amount.value),
+                amount: Number(parseFloat(amount.value).toFixed(2)),
                 notes: notes.value,
                 user_id: parseInt(localStorage.getItem("userId"))
             };
@@ -270,7 +317,75 @@ window.addEventListener("load", async() => {
             alert("Payment type saved!");
 
         });
-});
+    });
+
+    // add event listener for viewExpenseBtn
+        viewExpenseBtn.addEventListener("click", async () => {
+            
+            // clear mainDiv
+            mainDiv.textContent = "";
+
+            // setup from date entry
+            const fromDiv = document.createElement("div");
+            fromDiv.className = "dateDiv";
+            const fromDateEntry = document.createElement("input");
+            fromDateEntry.type = "date";
+            fromDateEntry.id = "fromDate";
+            fromDateEntry.value = new Date().toISOString().split("T")[0];
+            fromDateEntry.className = "input";
+            const fromLabel = document.createElement("label");
+            fromLabel.innerHTML = "From: ";
+            fromLabel.setAttribute("for", "fromDate");
+            fromDiv.appendChild(fromLabel);
+            fromDiv.appendChild(fromDateEntry);
+            mainDiv.appendChild(fromDiv);
+
+            // setup to date entry
+            const toDiv = document.createElement("div");
+            toDiv.className = "dateDiv";
+            const toDateEntry = document.createElement("input");
+            toDateEntry.type = "date";
+            toDateEntry.id = "toDate";
+            toDateEntry.value = new Date().toISOString().split("T")[0];
+            toDateEntry.className = "input";
+            const toLabel = document.createElement("label");
+            toLabel.innerHTML = "To: ";
+            toLabel.setAttribute("for", "toDate");
+            toDiv.appendChild(toLabel);
+            toDiv.appendChild(toDateEntry);
+            mainDiv.appendChild(toDiv);
+
+            // setup view button
+            const viewBtn = document.createElement("button");
+            viewBtn.textContent = "View";
+            viewBtn.classList = "saveBtn";
+            mainDiv.appendChild(viewBtn);
+
+            // event listener for viewBtn
+            viewBtn.addEventListener("click", async () => {
+                viewBtn.innerHTML = "Wait...";
+                viewBtn.disabled = true;
+                const viewData = {
+                    fromDate: fromDateEntry.value,
+                    toDate: toDateEntry.value
+                }
+                            
+                // send to backend
+                const viewRes = await fetch("/api/viewExpenses", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(viewData)
+            });
+            const expensesToView = await viewRes.json();
+            viewBtn.innerHTML = "View";
+            viewBtn.disabled = false;
+            displayExpenses(expensesToView);
+
+            });
+        });
+
     // initialize the page
     addExpenseBtn.click();
 });

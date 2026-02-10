@@ -1,4 +1,7 @@
 /* styles.css */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
 
 .inputRow {
     display: flex;
@@ -68,3 +71,24 @@ button {
 .currencyInput {
     padding-left: 20px;
 }
+
+.dateDiv {
+    display: flex;
+    flex-direction: row;
+    font-size: 20px;
+    align-items: center;
+}
+
+.dateDiv label {
+    width: 80px;
+}
+
+.expenseTable {
+    font-size: 16px;
+}
+
+.expenseTable th, tr {
+    text-align: center;
+    width: 95px;
+}
+
