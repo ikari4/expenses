@@ -1,6 +1,7 @@
 /* styles.css */
 body {
     font-family: Arial, Helvetica, sans-serif;
+    color: #033f63;
 }
 
 .inputRow {
@@ -39,12 +40,15 @@ body {
 .input, .input option {
     height: 40px;
     font-size: 20px;
+    color: #033f63;
 }
 
 button {
     height: 40px;
     width: 110px;
     font-size: 20px;
+    background-color: #033f63;
+    color: #fedc97;
 }
 
 .saveBtn {
@@ -65,7 +69,7 @@ button {
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
-    color: #666;
+    color: #033f63;
 }
 
 .currencyInput {
@@ -91,4 +95,5 @@ button {
     text-align: center;
     width: 95px;
 }
+
 

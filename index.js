@@ -50,6 +50,7 @@ function displayExpenses(expensesToView) {
     table.appendChild(headerRow);
 
     // each expense info goes into a single table cell
+    expensesToView.sort((a, b) => new Date(a.date) - new Date(b.date));
     expensesToView.forEach(expense => {
         const row = document.createElement("tr");
         
@@ -105,11 +106,18 @@ window.addEventListener("load", async() => {
         
         // clear mainDiv
         mainDiv.textContent = "";
+        lowerDiv.textContent = "";
 
         // setup date entry
         const dateEntry = document.createElement("input");
         dateEntry.type = "date";
-        dateEntry.value = new Date().toISOString().split("T")[0];
+
+        const today = new Date();
+        const localDate =
+            today.getFullYear() + "-" +
+            String(today.getMonth() + 1).padStart(2, "0") + "-" +
+            String(today.getDate()).padStart(2, "0");
+        dateEntry.value = localDate;
         dateEntry.className = "input";
         mainDiv.appendChild(dateEntry);
 
@@ -231,6 +239,7 @@ window.addEventListener("load", async() => {
         
         // clear mainDiv
         mainDiv.textContent = "";
+        lowerDiv.textContent = "";
 
         // add input and save for new category
         const addCategory = document.createElement("input");
@@ -331,7 +340,13 @@ window.addEventListener("load", async() => {
             const fromDateEntry = document.createElement("input");
             fromDateEntry.type = "date";
             fromDateEntry.id = "fromDate";
-            fromDateEntry.value = new Date().toISOString().split("T")[0];
+
+            const todayFrom = new Date();
+            const localFromDate =
+                todayFrom.getFullYear() + "-" +
+                String(todayFrom.getMonth() + 1).padStart(2, "0") + "-" +
+                String(todayFrom.getDate()).padStart(2, "0");
+            fromDateEntry.value = localFromDate;
             fromDateEntry.className = "input";
             const fromLabel = document.createElement("label");
             fromLabel.innerHTML = "From: ";
@@ -346,7 +361,13 @@ window.addEventListener("load", async() => {
             const toDateEntry = document.createElement("input");
             toDateEntry.type = "date";
             toDateEntry.id = "toDate";
-            toDateEntry.value = new Date().toISOString().split("T")[0];
+
+            const todayTo = new Date();
+            const localToDate =
+                todayTo.getFullYear() + "-" +
+                String(todayTo.getMonth() + 1).padStart(2, "0") + "-" +
+                String(todayTo.getDate()).padStart(2, "0");
+            toDateEntry.value = localToDate;
             toDateEntry.className = "input";
             const toLabel = document.createElement("label");
             toLabel.innerHTML = "To: ";
@@ -369,6 +390,12 @@ window.addEventListener("load", async() => {
                     fromDate: fromDateEntry.value,
                     toDate: toDateEntry.value
                 }
+                if (toDateEntry.value < fromDateEntry.value) {
+                    alert ("To date cannot be before From date");
+                    viewBtn.innerHTML = "View";
+                    viewBtn.disabled = false;
+                    return;
+                };
                             
                 // send to backend
                 const viewRes = await fetch("/api/viewExpenses", {
