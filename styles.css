@@ -49,6 +49,7 @@ button {
     font-size: 20px;
     background-color: #033f63;
     color: #fedc97;
+    border-radius: 20px;
 }
 
 .saveBtn {
@@ -84,7 +85,7 @@ button {
 }
 
 .dateDiv label {
-    width: 80px;
+    width: 60px;
 }
 
 .expenseTable {
