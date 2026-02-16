@@ -27,19 +27,35 @@ body {
 .headerText {
     font-size: 30px;
     align-self: center;
+    margin-top: 15px;
 }
 
-hr {
+.blueLine {
     width: 390px;
     color: #033f63;
-    margin-top: 40px;
-    margin-bottom: 15px;
+    margin: 0;
+}
+
+.yellowLine {
+    width: 390px;
+    border: none;
+    height: 5px;
+    background-color: #fedc97;
+    margin: 0;
 }
 
 #addDiv {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+#btnRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
 }
 
 .input, .input option {
@@ -55,11 +71,12 @@ button {
     background-color: #033f63;
     color: #fedc97;
     border-radius: 20px;
+    margin-bottom: 15px;
 }
 
 .saveBtn {
     align-self: center;
-    margin: 0 5px;
+    margin-left: 5px;
 }
 
 .currencyWrapper {
@@ -95,6 +112,7 @@ button {
 
 .expenseTable {
     font-size: 16px;
+    margin-bottom: 15px;
 }
 
 .expenseTable th, tr {

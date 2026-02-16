@@ -18,7 +18,9 @@ export default async function handler(req, res) {
         expenses.amount,
         expenses.notes,
         users.username,
+        expenses.payment_id,
         payment_types.payment AS payment,
+        expenses.category_id,
         categories.category AS category
       FROM expenses
       JOIN users ON expenses.user_id = users.id

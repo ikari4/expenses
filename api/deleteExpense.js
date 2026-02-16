@@ -1,4 +1,4 @@
-// updateExpense.js
+// deleteExpense.js
 
 import { createClient } from "@libsql/client";
 
@@ -11,19 +11,21 @@ export default async function handler(req, res) {
     if (req.method !== "POST")
         return res.status(405).json({ error: "Method not allowed" });
 
-    const { id, date, amount, category_id, payment_id, notes } = req.body;
+    const { id } = req.body;
+
+    if (!id)
+        return res.status(400).json({ error: "Missing id" });
 
     try {
-        await turso.execute(`
-            UPDATE expenses
-            SET date = ?, amount = ?, category_id = ?, payment_id = ?, notes = ?
-            WHERE id = ?
-        `, [date, amount, category_id, payment_id, notes, id]);
+        await turso.execute(
+            "DELETE FROM expenses WHERE id = ?",
+            [id]
+        );
 
         res.status(200).json({ success: true });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Database update failed" });
+        res.status(500).json({ error: "Database delete failed" });
     }
 }

@@ -1,199 +1,28 @@
 // index.js
 
-// displayCategories function
-async function displayCategories(categoryDropdown) {
-    // get list of categories from database
-    const categoryRes = await fetch("/api/getCategories", {
-        method: "GET"
-    });
-    const categoryList = await categoryRes.json();
-
-    // create dropdown with array returned from database
-    categoryList.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent = item.category;
-        categoryDropdown.appendChild(option);
-    });
-    
-} 
-
-// displayPaymentType function
-async function displayPaymentTypes(paymentTypeDropdown) {
-    // get list of payment types from database
-    const paymentRes = await fetch("/api/getPaymentTypes", {
-        method: "GET"
-    });
-    const paymentTypeList = await paymentRes.json();
-
-    // create dropdown with array returned from database
-    paymentTypeList.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent = item.payment;
-        paymentTypeDropdown.appendChild(option);
-    });
-    
-} 
-
-// displayExpenses function
-function displayExpenses(expensesToView) {
-    displayDiv.innerHTML= "";
-    const table = document.createElement("table");
-    table.className = "expenseTable";
-    const headerRow = document.createElement("tr");
-    ["Date", "Amount", "Category", "Payment"].forEach(text => {
-        const th = document.createElement("th");
-        th.textContent = text;
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    // each expense info goes into a single table cell
-    expensesToView.sort((a, b) => new Date(a.date) - new Date(b.date));
-    expensesToView.forEach(expense => {
-        const row = document.createElement("tr");
-        
-        // format amount to have two decimal places
-        const formattedAmount = `$${Number(expense.amount).toFixed(2)}`;
-        const values = [
-            expense.date,
-            formattedAmount,
-            expense.category,
-            expense.payment
-        ];
-         values.forEach((value, index) => {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            
-            // attach listener to date column
-            if (index === 0) {
-                cell.classList.add("dateLink");
-
-                cell.addEventListener("click", () => {
-                    editExpense(expense);
-                });
-        }
-
-            row.appendChild(cell);
-        });       
-        table.appendChild(row);
-    });
-
-    displayDiv.appendChild(table);
-}
-
-// editExpense function
-function editExpense(expense) {
-    detailDiv.innerHTML = ""; // clear old content
-
-    // ---- Date ----
-    const dateInput = document.createElement("input");
-    dateInput.type = "date";
-    dateInput.className = "input";
-    dateInput.value = expense.date;
-
-    // ---- Amount ----
-    const amountInput = document.createElement("input");
-    amountInput.type = "text";
-    amountInput.inputMode = "decimal";
-    amountInput.value = Number(expense.amount).toFixed(2);
-
-    // ---- Category ----
-    const categoryInput = document.createElement("input");
-    categoryInput.value = expense.category;
-
-    // ---- Payment ----
-    const paymentInput = document.createElement("input");
-    paymentInput.value = expense.payment;
-
-    // ---- Notes ----
-    const notesInput = document.createElement("textarea");
-    notesInput.value = expense.notes || "";
-
-    // ---- Save Button ----
-    const saveBtn = document.createElement("button");
-    saveBtn.textContent = "Save Changes";
-
-    saveBtn.addEventListener("click", async () => {
-        await updateExpense({
-            id: expense.id,
-            date: dateInput.value,
-            amount: parseFloat(amountInput.value),
-            category: categoryInput.value,
-            payment: paymentInput.value,
-            notes: notesInput.value
-        });
-    });
-
-    detailDiv.append(
-        dateInput,
-        amountInput,
-        categoryInput,
-        paymentInput,
-        notesInput,
-        saveBtn
-    );
-}
-
-async function updateExpense(updatedExpense) {
-    const res = await fetch("/api/updateExpense", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(updatedExpense)
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-        alert("Updated!");
-        viewExpenseBtn.click();
-    } else {
-        alert("Update failed");
-    }
-}
-
-
-
-
-
-// main script begins here
-const loginModal = document.getElementById("loginModal");
-const loginBtn = document.getElementById("loginBtn");
-const username = localStorage.getItem("username");
-const addDiv = document.getElementById("addDiv");
-const searchDiv = document.getElementById("searchDiv");
-const displayDiv = document.getElementById("displayDiv");
-const editDiv = document.getElementById("editDiv");
-
-// on page load
-window.addEventListener("load", async() => {
-    // show login screen if user not logged in
-    if(!username) {
-        loginModal.style.display = "block";
-        return;
-    }
-
+// addNewExpense function
+function addNewExpense(expense = null) {
+    addDiv.innerHTML = "";
     // setup header
     const addHeader = document.createElement("div");
     addHeader.className = "headerText";
     addHeader.innerHTML = "Add New Expense";
     addDiv.appendChild(addHeader);
-    
-
+ 
     // setup date entry
     const dateEntry = document.createElement("input");
     dateEntry.type = "date";
-
-    const today = new Date();
-    const localDate =
-        today.getFullYear() + "-" +
-        String(today.getMonth() + 1).padStart(2, "0") + "-" +
-        String(today.getDate()).padStart(2, "0");
-    dateEntry.value = localDate;
     dateEntry.className = "input";
+    if (expense) {
+        dateEntry.value = expense.date;
+    } else {
+        const today = new Date();
+        const localDate =
+            today.getFullYear() + "-" +
+            String(today.getMonth() + 1).padStart(2, "0") + "-" +
+            String(today.getDate()).padStart(2, "0");
+        dateEntry.value = localDate;
+    }
     addDiv.appendChild(dateEntry);
 
     // setup list of categories
@@ -207,7 +36,11 @@ window.addEventListener("load", async() => {
     defaultCategory.disabled = true;
     categoryDropdown.appendChild(defaultCategory);
     addDiv.appendChild(categoryDropdown);
-    displayCategories(categoryDropdown);
+    displayCategories(categoryDropdown).then(() => {
+        if (expense) {
+            categoryDropdown.value = expense.category_id;
+        }
+    });
 
     // setup list of payment types
     const paymentTypeDropdown = document.createElement("select");
@@ -220,7 +53,11 @@ window.addEventListener("load", async() => {
     defaultPayment.disabled = true;
     paymentTypeDropdown.appendChild(defaultPayment);
     addDiv.appendChild(paymentTypeDropdown);
-    displayPaymentTypes(paymentTypeDropdown);
+    displayPaymentTypes(paymentTypeDropdown).then(() => {
+        if (expense) {
+            paymentTypeDropdown.value = expense.payment_id;
+        }
+    });
 
     // setup amount entry
     const amountWrapper = document.createElement("div");
@@ -230,6 +67,9 @@ window.addEventListener("load", async() => {
     amount.inputMode = "decimal";
     amount.placeholder = "0.00";
     amount.className = "input currencyInput";
+    if (expense) {
+        amount.value = Number(expense.amount).toFixed(2);
+    }
     amountWrapper.appendChild(amount);
     addDiv.appendChild(amountWrapper);
 
@@ -248,13 +88,55 @@ window.addEventListener("load", async() => {
     notes.type = "text";
     notes.placeholder = "Note";
     notes.className = "input";
+    if (expense) {
+        notes.value = expense.notes || "";
+    }
     addDiv.appendChild(notes);
 
     // save button
+    const btnRow = document.createElement("div");
+    btnRow.id = "btnRow";
     const saveBtn = document.createElement("button");
-    saveBtn.textContent = "Save";
+    saveBtn.textContent = expense ? "Update" : "Save";
     saveBtn.classList = "saveBtn";
-    addDiv.appendChild(saveBtn);
+    btnRow.appendChild(saveBtn);
+
+    // delete button
+    if (expense) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "deleteBtn";
+        btnRow.appendChild(deleteBtn);
+        
+        deleteBtn.addEventListener("click", async () => {
+            const confirmed = confirm("Delete this expense?");
+            if (!confirmed) return;
+
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = "Deleting...";
+
+            const res = await fetch("/api/deleteExpense", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ id: expense.id })
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                alert("Expense deleted");
+                addDiv.innerHTML = "";
+                addNewExpense();
+            } else {
+                alert("Delete failed");
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = "Delete";
+            }   
+        });
+    }
+    addDiv.appendChild(btnRow);
 
     // clear form after saving
     function clearExpenseForm() {
@@ -279,6 +161,7 @@ window.addEventListener("load", async() => {
         saveBtn.disabled = true;
         saveBtn.innerHTML = "Wait...";
         const expenseData = {
+            id: expense?.id,
             date: dateEntry.value,
             category_id: categoryDropdown.value,
             payment_id: paymentTypeDropdown.value,
@@ -314,7 +197,8 @@ window.addEventListener("load", async() => {
         }
 
         // send to backend
-        const saveRes = await fetch("/api/saveExpense", {
+        const url = expense ? "/api/updateExpense" : "/api/saveExpense";
+        const saveRes = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -323,102 +207,17 @@ window.addEventListener("load", async() => {
         });
         const result = await saveRes.json();
         saveBtn.disabled = false;
-        saveBtn.innerHTML = "Save";
+        saveBtn.innerHTML = expense ? "Update" : "Save";
         alert("Expense saved!");
-        clearExpenseForm();
+        if (!expense) clearExpenseForm();
     });
 
-        // setup header
-        const editHeader = document.createElement("div");
-        editHeader.className = "headerText";
-        editHeader.innerHTML = "Add New Option";
-        editDiv.appendChild(editHeader);
 
-        // add input and save for new category
-        const addCategory = document.createElement("input");
-        addCategory.type = "text";
-        addCategory.placeholder = "Add a category";
-        addCategory.className = "input";
-        const addCategoryDiv = document.createElement("div");
-        addCategoryDiv.appendChild(addCategory);
-        const saveCatBtn = document.createElement("button");
-        saveCatBtn.textContent = "Save";
-        saveCatBtn.classList = "saveBtn";
-        addCategoryDiv.appendChild(saveCatBtn);
-        editDiv.appendChild(addCategoryDiv);
+}
 
-        // event listener for saveCatBtn
-        saveCatBtn.addEventListener("click", async () => {
-            saveCatBtn.innerHTML = "Wait...";
-            saveCatBtn.disabled = true;
-            const categoryData = {
-                category: addCategory.value
-            }
-
-            // validation
-            if (!categoryData.category) {
-                alert("Please enter a category.");
-                saveCatBtn.disabled = false;
-                saveCatBtn.innerHTML = "Save";
-                return;
-            }
-
-            // send to backend
-            const saveRes = await fetch("/api/saveCategory", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(categoryData)
-            });
-            const result = await saveRes.json();
-            // editBtn.click();
-            alert("Category saved!");
-
-        });
-
-        // add input and save for new payment type
-        const addPaymentType = document.createElement("input");
-        addPaymentType.type = "text";
-        addPaymentType.placeholder = "Add a payment type";
-        addPaymentType.className = "input";
-        const addPaymentTypeDiv = document.createElement("div");
-        addPaymentTypeDiv.appendChild(addPaymentType);
-        const savePayBtn = document.createElement("button");
-        savePayBtn.textContent = "Save";
-        savePayBtn.classList = "saveBtn";
-        addPaymentTypeDiv.appendChild(savePayBtn);
-        editDiv.appendChild(addPaymentTypeDiv);
-
-        // event listener for savePayBtn
-        savePayBtn.addEventListener("click", async () => {
-            savePayBtn.innerHTML = "Wait...";
-            savePayBtn.disabled = true;
-            const paymentData = {
-                payment: addPaymentType.value
-            }
-
-            // validation
-            if (!paymentData.payment) {
-                alert("Please enter a payment type.");
-                savePayBtn.disabled = false;
-                savePayBtn.innerHTML = "Save";
-                return;
-            }
-
-            // send to backend
-            const saveRes = await fetch("/api/savePaymentType", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(paymentData)
-            });
-            const result = await saveRes.json();
-            alert("Payment type saved!");
-
-        });
-
+// searchExpenses function
+function searchExpenses() {
+    // setup header 
     const searchHeader = document.createElement("div");
     searchHeader.className = "headerText";
     searchHeader.innerHTML = "Search Expenses";
@@ -496,11 +295,219 @@ window.addEventListener("load", async() => {
         body: JSON.stringify(viewData)
     });
     const expensesToView = await viewRes.json();
+    console.log(expensesToView);
     viewBtn.innerHTML = "View";
     viewBtn.disabled = false;
+
     displayExpenses(expensesToView);
 
     });
+}
+
+// addNewOption function
+function addNewOption() {
+    // setup header
+    const editHeader = document.createElement("div");
+    editHeader.className = "headerText";
+    editHeader.innerHTML = "Add New Option";
+    editDiv.appendChild(editHeader);
+
+    // add input and save for new category
+    const addCategory = document.createElement("input");
+    addCategory.type = "text";
+    addCategory.placeholder = "Add a category";
+    addCategory.className = "input";
+    const addCategoryDiv = document.createElement("div");
+    addCategoryDiv.appendChild(addCategory);
+    const saveCatBtn = document.createElement("button");
+    saveCatBtn.textContent = "Save";
+    saveCatBtn.classList = "saveBtn";
+    addCategoryDiv.appendChild(saveCatBtn);
+    editDiv.appendChild(addCategoryDiv);
+
+    // event listener for saveCatBtn
+    saveCatBtn.addEventListener("click", async () => {
+        saveCatBtn.innerHTML = "Wait...";
+        saveCatBtn.disabled = true;
+        const categoryData = {
+            category: addCategory.value
+        }
+
+        // validation
+        if (!categoryData.category) {
+            alert("Please enter a category.");
+            saveCatBtn.disabled = false;
+            saveCatBtn.innerHTML = "Save";
+            return;
+        }
+
+        // send to backend
+        const saveRes = await fetch("/api/saveCategory", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(categoryData)
+        });
+        const result = await saveRes.json();
+        // editBtn.click();
+        alert("Category saved!");
+
+    });
+
+    // add input and save for new payment type
+    const addPaymentType = document.createElement("input");
+    addPaymentType.type = "text";
+    addPaymentType.placeholder = "Add a payment type";
+    addPaymentType.className = "input";
+    const addPaymentTypeDiv = document.createElement("div");
+    addPaymentTypeDiv.appendChild(addPaymentType);
+    const savePayBtn = document.createElement("button");
+    savePayBtn.textContent = "Save";
+    savePayBtn.classList = "saveBtn";
+    addPaymentTypeDiv.appendChild(savePayBtn);
+    editDiv.appendChild(addPaymentTypeDiv);
+
+    // event listener for savePayBtn
+    savePayBtn.addEventListener("click", async () => {
+        savePayBtn.innerHTML = "Wait...";
+        savePayBtn.disabled = true;
+        const paymentData = {
+            payment: addPaymentType.value
+        }
+
+        // validation
+        if (!paymentData.payment) {
+            alert("Please enter a payment type.");
+            savePayBtn.disabled = false;
+            savePayBtn.innerHTML = "Save";
+            return;
+        }
+
+        // send to backend
+        const saveRes = await fetch("/api/savePaymentType", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(paymentData)
+        });
+        const result = await saveRes.json();
+        alert("Payment type saved!");
+
+    });
+}
+
+// displayCategories function
+async function displayCategories(categoryDropdown) {
+    // get list of categories from database
+    const categoryRes = await fetch("/api/getCategories", {
+        method: "GET"
+    });
+    const categoryList = await categoryRes.json();
+
+    // create dropdown with array returned from database
+    categoryList.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.category;
+        categoryDropdown.appendChild(option);
+    });
+    
+} 
+
+// displayPaymentType function
+async function displayPaymentTypes(paymentTypeDropdown) {
+    // get list of payment types from database
+    const paymentRes = await fetch("/api/getPaymentTypes", {
+        method: "GET"
+    });
+    const paymentTypeList = await paymentRes.json();
+
+    // create dropdown with array returned from database
+    paymentTypeList.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.payment;
+        paymentTypeDropdown.appendChild(option);
+    });
+    
+} 
+
+// displayExpenses function
+function displayExpenses(expensesToView) {
+    displayDiv.innerHTML= "";
+
+    // setup header
+    const displayHeader = document.createElement("div");
+    displayHeader.className = "headerText";
+    displayHeader.innerHTML = "Expenses";
+    displayDiv.appendChild(displayHeader);
+
+    const table = document.createElement("table");
+    table.className = "expenseTable";
+    const headerRow = document.createElement("tr");
+    ["Date", "Amount", "Category", "Payment"].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    // each expense info goes into a single table cell
+    expensesToView.sort((a, b) => new Date(a.date) - new Date(b.date));
+    console.log(expensesToView);
+    expensesToView.forEach(expense => {
+        const row = document.createElement("tr");
+        
+        // format amount to have two decimal places
+        const formattedAmount = `$${Number(expense.amount).toFixed(2)}`;
+        const values = [
+            expense.date,
+            formattedAmount,
+            expense.category,
+            expense.payment
+        ];
+         values.forEach((value, index) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            
+            // attach listener to date column
+            if (index === 0) {
+                cell.classList.add("dateLink");
+
+                cell.addEventListener("click", () => {
+                    addNewExpense(expense);
+                });
+        }
+
+            row.appendChild(cell);
+        });       
+        table.appendChild(row);
+    });
+
+    displayDiv.appendChild(table);
+}
+
+// main script begins here
+const loginModal = document.getElementById("loginModal");
+const loginBtn = document.getElementById("loginBtn");
+const username = localStorage.getItem("username");
+const addDiv = document.getElementById("addDiv");
+const searchDiv = document.getElementById("searchDiv");
+const displayDiv = document.getElementById("displayDiv");
+const editDiv = document.getElementById("editDiv");
+
+// on page load
+window.addEventListener("load", async() => {
+    // show login screen if user not logged in
+    if(!username) {
+        loginModal.style.display = "block";
+        return;
+    }
+    addNewExpense();
+    searchExpenses();
+    addNewOption();  
 });
 
 // on 'login' button click
