@@ -38,7 +38,7 @@ async function displayPaymentTypes(paymentTypeDropdown) {
 
 // displayExpenses function
 function displayExpenses(expensesToView) {
-    lowerDiv.innerHTML= "";
+    displayDiv.innerHTML= "";
     const table = document.createElement("table");
     table.className = "expenseTable";
     const headerRow = document.createElement("tr");
@@ -62,27 +62,111 @@ function displayExpenses(expensesToView) {
             expense.category,
             expense.payment
         ];
-         values.forEach(value => {
+         values.forEach((value, index) => {
             const cell = document.createElement("td");
             cell.textContent = value;
+            
+            // attach listener to date column
+            if (index === 0) {
+                cell.classList.add("dateLink");
+
+                cell.addEventListener("click", () => {
+                    editExpense(expense);
+                });
+        }
+
             row.appendChild(cell);
         });       
         table.appendChild(row);
     });
 
-    lowerDiv.appendChild(table);
+    displayDiv.appendChild(table);
 }
+
+// editExpense function
+function editExpense(expense) {
+    detailDiv.innerHTML = ""; // clear old content
+
+    // ---- Date ----
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    dateInput.className = "input";
+    dateInput.value = expense.date;
+
+    // ---- Amount ----
+    const amountInput = document.createElement("input");
+    amountInput.type = "text";
+    amountInput.inputMode = "decimal";
+    amountInput.value = Number(expense.amount).toFixed(2);
+
+    // ---- Category ----
+    const categoryInput = document.createElement("input");
+    categoryInput.value = expense.category;
+
+    // ---- Payment ----
+    const paymentInput = document.createElement("input");
+    paymentInput.value = expense.payment;
+
+    // ---- Notes ----
+    const notesInput = document.createElement("textarea");
+    notesInput.value = expense.notes || "";
+
+    // ---- Save Button ----
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Save Changes";
+
+    saveBtn.addEventListener("click", async () => {
+        await updateExpense({
+            id: expense.id,
+            date: dateInput.value,
+            amount: parseFloat(amountInput.value),
+            category: categoryInput.value,
+            payment: paymentInput.value,
+            notes: notesInput.value
+        });
+    });
+
+    detailDiv.append(
+        dateInput,
+        amountInput,
+        categoryInput,
+        paymentInput,
+        notesInput,
+        saveBtn
+    );
+}
+
+async function updateExpense(updatedExpense) {
+    const res = await fetch("/api/updateExpense", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedExpense)
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        alert("Updated!");
+        viewExpenseBtn.click();
+    } else {
+        alert("Update failed");
+    }
+}
+
+
+
+
 
 // main script begins here
 const loginModal = document.getElementById("loginModal");
 const loginBtn = document.getElementById("loginBtn");
 const username = localStorage.getItem("username");
-const addExpenseBtn = document.createElement("button");
-const viewExpenseBtn = document.createElement("button");
-const editBtn = document.createElement("button");
-const headerDiv = document.getElementById("headerDiv");
-const mainDiv = document.getElementById("mainDiv");
-const lowerDiv = document.getElementById("lowerDiv");
+const addDiv = document.getElementById("addDiv");
+const searchDiv = document.getElementById("searchDiv");
+const displayDiv = document.getElementById("displayDiv");
+const editDiv = document.getElementById("editDiv");
 
 // on page load
 window.addEventListener("load", async() => {
@@ -92,154 +176,163 @@ window.addEventListener("load", async() => {
         return;
     }
 
-    // display buttons in header
-    loginModal.style.display = "none";
-    addExpenseBtn.innerHTML = "Add $";
-    headerDiv.appendChild(addExpenseBtn);
-    viewExpenseBtn.innerHTML = "View";
-    headerDiv.appendChild(viewExpenseBtn);
-    editBtn.innerHTML = "Edit";
-    headerDiv.appendChild(editBtn);
+    // setup header
+    const addHeader = document.createElement("div");
+    addHeader.className = "headerText";
+    addHeader.innerHTML = "Add New Expense";
+    addDiv.appendChild(addHeader);
+    
 
-    // event listenter for addExpenseBtn
-    addExpenseBtn.addEventListener("click", () => {
-        
-        // clear mainDiv
-        mainDiv.textContent = "";
-        lowerDiv.textContent = "";
+    // setup date entry
+    const dateEntry = document.createElement("input");
+    dateEntry.type = "date";
 
-        // setup date entry
-        const dateEntry = document.createElement("input");
-        dateEntry.type = "date";
+    const today = new Date();
+    const localDate =
+        today.getFullYear() + "-" +
+        String(today.getMonth() + 1).padStart(2, "0") + "-" +
+        String(today.getDate()).padStart(2, "0");
+    dateEntry.value = localDate;
+    dateEntry.className = "input";
+    addDiv.appendChild(dateEntry);
 
+    // setup list of categories
+    const categoryDropdown = document.createElement("select");
+    categoryDropdown.innerHTML = "";
+    categoryDropdown.className = "input";
+    const defaultCategory = document.createElement("option");
+    defaultCategory.value = "";
+    defaultCategory.textContent = "Category";
+    defaultCategory.selected = true;
+    defaultCategory.disabled = true;
+    categoryDropdown.appendChild(defaultCategory);
+    addDiv.appendChild(categoryDropdown);
+    displayCategories(categoryDropdown);
+
+    // setup list of payment types
+    const paymentTypeDropdown = document.createElement("select");
+    paymentTypeDropdown.innerHTML = "";
+    paymentTypeDropdown.className = "input";
+    const defaultPayment = document.createElement("option");
+    defaultPayment.value = "";
+    defaultPayment.textContent = "Payment Type";
+    defaultPayment.selected = true;
+    defaultPayment.disabled = true;
+    paymentTypeDropdown.appendChild(defaultPayment);
+    addDiv.appendChild(paymentTypeDropdown);
+    displayPaymentTypes(paymentTypeDropdown);
+
+    // setup amount entry
+    const amountWrapper = document.createElement("div");
+    amountWrapper.className = "currencyWrapper";
+    const amount = document.createElement("input");
+    amount.type = "text";
+    amount.inputMode = "decimal";
+    amount.placeholder = "0.00";
+    amount.className = "input currencyInput";
+    amountWrapper.appendChild(amount);
+    addDiv.appendChild(amountWrapper);
+
+    amount.addEventListener("blur", () => {
+        if (!amount.value) return;
+        const num = parseFloat(amount.value.replace(/[^0-9.]/g, ""));
+        if (!isNaN(num)) {
+            amount.value = num.toFixed(2);
+        } else {
+            amount.value = "";
+        }
+    });
+
+    // setup notes
+    const notes = document.createElement("input");
+    notes.type = "text";
+    notes.placeholder = "Note";
+    notes.className = "input";
+    addDiv.appendChild(notes);
+
+    // save button
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Save";
+    saveBtn.classList = "saveBtn";
+    addDiv.appendChild(saveBtn);
+
+    // clear form after saving
+    function clearExpenseForm() {
+        // reset date to today
         const today = new Date();
-        const localDate =
+        dateEntry.value =
             today.getFullYear() + "-" +
             String(today.getMonth() + 1).padStart(2, "0") + "-" +
             String(today.getDate()).padStart(2, "0");
-        dateEntry.value = localDate;
-        dateEntry.className = "input";
-        mainDiv.appendChild(dateEntry);
 
-        // setup list of categories
-        const categoryDropdown = document.createElement("select");
-        categoryDropdown.innerHTML = "";
-        categoryDropdown.className = "input";
-        const defaultCategory = document.createElement("option");
-        defaultCategory.value = "";
-        defaultCategory.textContent = "Category";
-        defaultCategory.selected = true;
-        defaultCategory.disabled = true;
-        categoryDropdown.appendChild(defaultCategory);
-        mainDiv.appendChild(categoryDropdown);
-        displayCategories(categoryDropdown);
+        // reset dropdowns
+        categoryDropdown.selectedIndex = 0;
+        paymentTypeDropdown.selectedIndex = 0;
 
-        // setup list of payment types
-        const paymentTypeDropdown = document.createElement("select");
-        paymentTypeDropdown.innerHTML = "";
-        paymentTypeDropdown.className = "input";
-        const defaultPayment = document.createElement("option");
-        defaultPayment.value = "";
-        defaultPayment.textContent = "Payment Type";
-        defaultPayment.selected = true;
-        defaultPayment.disabled = true;
-        paymentTypeDropdown.appendChild(defaultPayment);
-        mainDiv.appendChild(paymentTypeDropdown);
-        displayPaymentTypes(paymentTypeDropdown);
+        // clear inputs
+        amount.value = "";
+        notes.value = "";
+    }
 
-        // setup amount entry
-        const amountWrapper = document.createElement("div");
-        amountWrapper.className = "currencyWrapper";
-        const amount = document.createElement("input");
-        amount.type = "text";
-        amount.inputMode = "decimal";
-        amount.placeholder = "0.00";
-        amount.className = "input currencyInput";
-        amountWrapper.appendChild(amount);
-        mainDiv.appendChild(amountWrapper);
+    // event listener for saving
+    saveBtn.addEventListener("click", async () => {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = "Wait...";
+        const expenseData = {
+            date: dateEntry.value,
+            category_id: categoryDropdown.value,
+            payment_id: paymentTypeDropdown.value,
+            amount: Number(parseFloat(amount.value).toFixed(2)),
+            notes: notes.value,
+            user_id: parseInt(localStorage.getItem("userId"))
+        };
 
-        amount.addEventListener("blur", () => {
-            if (!amount.value) return;
-            const num = parseFloat(amount.value.replace(/[^0-9.]/g, ""));
-            if (!isNaN(num)) {
-                amount.value = num.toFixed(2);
-            } else {
-                amount.value = "";
-            }
+        // validation
+        if (!expenseData.date) {
+            alert("Please select a date.");
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = "Save";
+            return;
+        }
+        if (!expenseData.category_id) {
+            alert("Please select a category.");
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = "Save";
+            return;
+        }
+        if (!expenseData.payment_id) {
+            alert("Please select a payment type.");
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = "Save";
+            return;
+        }
+        if (isNaN(expenseData.amount) || expenseData.amount <= 0) {
+            alert("Please enter a valid amount.");
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = "Save";
+            return;
+        }
+
+        // send to backend
+        const saveRes = await fetch("/api/saveExpense", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(expenseData)
         });
-
-        // setup notes
-        const notes = document.createElement("input");
-        notes.type = "text";
-        notes.placeholder = "Note";
-        notes.className = "input";
-        mainDiv.appendChild(notes);
-
-        // save button
-        const saveBtn = document.createElement("button");
-        saveBtn.textContent = "Save";
-        saveBtn.classList = "saveBtn";
-        mainDiv.appendChild(saveBtn);
-
-        // event listener for saving
-        saveBtn.addEventListener("click", async () => {
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = "Wait...";
-            const expenseData = {
-                date: dateEntry.value,
-                category_id: categoryDropdown.value,
-                payment_id: paymentTypeDropdown.value,
-                amount: Number(parseFloat(amount.value).toFixed(2)),
-                notes: notes.value,
-                user_id: parseInt(localStorage.getItem("userId"))
-            };
-
-            // validation
-            if (!expenseData.date) {
-                alert("Please select a date.");
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = "Save";
-                return;
-            }
-            if (!expenseData.category_id) {
-                alert("Please select a category.");
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = "Save";
-                return;
-            }
-            if (!expenseData.payment_id) {
-                alert("Please select a payment type.");
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = "Save";
-                return;
-            }
-            if (isNaN(expenseData.amount) || expenseData.amount <= 0) {
-                alert("Please enter a valid amount.");
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = "Save";
-                return;
-            }
-
-            // send to backend
-            const saveRes = await fetch("/api/saveExpense", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(expenseData)
-            });
-            const result = await saveRes.json();
-            addExpenseBtn.click();
-            alert("Expense saved!");
-        });
+        const result = await saveRes.json();
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = "Save";
+        alert("Expense saved!");
+        clearExpenseForm();
     });
 
-    // event listenter for editBtn
-    editBtn.addEventListener("click", async () => {
-        
-        // clear mainDiv
-        mainDiv.textContent = "";
-        lowerDiv.textContent = "";
+        // setup header
+        const editHeader = document.createElement("div");
+        editHeader.className = "headerText";
+        editHeader.innerHTML = "Add New Option";
+        editDiv.appendChild(editHeader);
 
         // add input and save for new category
         const addCategory = document.createElement("input");
@@ -252,7 +345,7 @@ window.addEventListener("load", async() => {
         saveCatBtn.textContent = "Save";
         saveCatBtn.classList = "saveBtn";
         addCategoryDiv.appendChild(saveCatBtn);
-        mainDiv.appendChild(addCategoryDiv);
+        editDiv.appendChild(addCategoryDiv);
 
         // event listener for saveCatBtn
         saveCatBtn.addEventListener("click", async () => {
@@ -279,7 +372,7 @@ window.addEventListener("load", async() => {
                 body: JSON.stringify(categoryData)
             });
             const result = await saveRes.json();
-            editBtn.click();
+            // editBtn.click();
             alert("Category saved!");
 
         });
@@ -295,7 +388,7 @@ window.addEventListener("load", async() => {
         savePayBtn.textContent = "Save";
         savePayBtn.classList = "saveBtn";
         addPaymentTypeDiv.appendChild(savePayBtn);
-        mainDiv.appendChild(addPaymentTypeDiv);
+        editDiv.appendChild(addPaymentTypeDiv);
 
         // event listener for savePayBtn
         savePayBtn.addEventListener("click", async () => {
@@ -322,99 +415,92 @@ window.addEventListener("load", async() => {
                 body: JSON.stringify(paymentData)
             });
             const result = await saveRes.json();
-            editBtn.click();
             alert("Payment type saved!");
 
         });
-    });
 
-    // add event listener for viewExpenseBtn
-        viewExpenseBtn.addEventListener("click", async () => {
-            
-            // clear mainDiv
-            mainDiv.textContent = "";
+    const searchHeader = document.createElement("div");
+    searchHeader.className = "headerText";
+    searchHeader.innerHTML = "Search Expenses";
+    searchDiv.appendChild(searchHeader);
 
-            // setup from date entry
-            const fromDiv = document.createElement("div");
-            fromDiv.className = "dateDiv";
-            const fromDateEntry = document.createElement("input");
-            fromDateEntry.type = "date";
-            fromDateEntry.id = "fromDate";
+    // setup from date entry
+    const fromDiv = document.createElement("div");
+    fromDiv.className = "dateDiv";
+    const fromDateEntry = document.createElement("input");
+    fromDateEntry.type = "date";
+    fromDateEntry.id = "fromDate";
 
-            const todayFrom = new Date();
-            const localFromDate =
-                todayFrom.getFullYear() + "-" +
-                String(todayFrom.getMonth() + 1).padStart(2, "0") + "-" +
-                String(todayFrom.getDate()).padStart(2, "0");
-            fromDateEntry.value = localFromDate;
-            fromDateEntry.className = "input";
-            const fromLabel = document.createElement("label");
-            fromLabel.innerHTML = "From: ";
-            fromLabel.setAttribute("for", "fromDate");
-            fromDiv.appendChild(fromLabel);
-            fromDiv.appendChild(fromDateEntry);
-            mainDiv.appendChild(fromDiv);
+    const todayFrom = new Date();
+    const localFromDate =
+        todayFrom.getFullYear() + "-" +
+        String(todayFrom.getMonth() + 1).padStart(2, "0") + "-" +
+        String(todayFrom.getDate()).padStart(2, "0");
+    fromDateEntry.value = localFromDate;
+    fromDateEntry.className = "input";
+    const fromLabel = document.createElement("label");
+    fromLabel.innerHTML = "From: ";
+    fromLabel.setAttribute("for", "fromDate");
+    fromDiv.appendChild(fromLabel);
+    fromDiv.appendChild(fromDateEntry);
+    searchDiv.appendChild(fromDiv);
 
-            // setup to date entry
-            const toDiv = document.createElement("div");
-            toDiv.className = "dateDiv";
-            const toDateEntry = document.createElement("input");
-            toDateEntry.type = "date";
-            toDateEntry.id = "toDate";
+    // setup to date entry
+    const toDiv = document.createElement("div");
+    toDiv.className = "dateDiv";
+    const toDateEntry = document.createElement("input");
+    toDateEntry.type = "date";
+    toDateEntry.id = "toDate";
 
-            const todayTo = new Date();
-            const localToDate =
-                todayTo.getFullYear() + "-" +
-                String(todayTo.getMonth() + 1).padStart(2, "0") + "-" +
-                String(todayTo.getDate()).padStart(2, "0");
-            toDateEntry.value = localToDate;
-            toDateEntry.className = "input";
-            const toLabel = document.createElement("label");
-            toLabel.innerHTML = "To: ";
-            toLabel.setAttribute("for", "toDate");
-            toDiv.appendChild(toLabel);
-            toDiv.appendChild(toDateEntry);
-            mainDiv.appendChild(toDiv);
+    const todayTo = new Date();
+    const localToDate =
+        todayTo.getFullYear() + "-" +
+        String(todayTo.getMonth() + 1).padStart(2, "0") + "-" +
+        String(todayTo.getDate()).padStart(2, "0");
+    toDateEntry.value = localToDate;
+    toDateEntry.className = "input";
+    const toLabel = document.createElement("label");
+    toLabel.innerHTML = "To: ";
+    toLabel.setAttribute("for", "toDate");
+    toDiv.appendChild(toLabel);
+    toDiv.appendChild(toDateEntry);
+    searchDiv.appendChild(toDiv);
 
-            // setup view button
-            const viewBtn = document.createElement("button");
-            viewBtn.textContent = "View";
-            viewBtn.classList = "saveBtn";
-            mainDiv.appendChild(viewBtn);
+    // setup view button
+    const viewBtn = document.createElement("button");
+    viewBtn.textContent = "View";
+    viewBtn.classList = "saveBtn";
+    searchDiv.appendChild(viewBtn);
 
-            // event listener for viewBtn
-            viewBtn.addEventListener("click", async () => {
-                viewBtn.innerHTML = "Wait...";
-                viewBtn.disabled = true;
-                const viewData = {
-                    fromDate: fromDateEntry.value,
-                    toDate: toDateEntry.value
-                }
-                if (toDateEntry.value < fromDateEntry.value) {
-                    alert ("To date cannot be before From date");
-                    viewBtn.innerHTML = "View";
-                    viewBtn.disabled = false;
-                    return;
-                };
-                            
-                // send to backend
-                const viewRes = await fetch("/api/viewExpenses", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(viewData)
-            });
-            const expensesToView = await viewRes.json();
+    // event listener for viewBtn
+    viewBtn.addEventListener("click", async () => {
+        viewBtn.innerHTML = "Wait...";
+        viewBtn.disabled = true;
+        const viewData = {
+            fromDate: fromDateEntry.value,
+            toDate: toDateEntry.value
+        }
+        if (toDateEntry.value < fromDateEntry.value) {
+            alert ("To date cannot be before From date");
             viewBtn.innerHTML = "View";
             viewBtn.disabled = false;
-            displayExpenses(expensesToView);
+            return;
+        };
+                    
+        // send to backend
+        const viewRes = await fetch("/api/viewExpenses", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(viewData)
+    });
+    const expensesToView = await viewRes.json();
+    viewBtn.innerHTML = "View";
+    viewBtn.disabled = false;
+    displayExpenses(expensesToView);
 
-            });
-        });
-
-    // initialize the page
-    addExpenseBtn.click();
+    });
 });
 
 // on 'login' button click

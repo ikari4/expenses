@@ -24,14 +24,19 @@ body {
     align-items: center;
 }
 
-#headerDiv {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    margin: 25px 0px;
+.headerText {
+    font-size: 30px;
+    align-self: center;
 }
 
-#mainDiv {
+hr {
+    width: 390px;
+    color: #033f63;
+    margin-top: 40px;
+    margin-bottom: 15px;
+}
+
+#addDiv {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -54,7 +59,7 @@ button {
 
 .saveBtn {
     align-self: center;
-    margin: 25px 5px;
+    margin: 0 5px;
 }
 
 .currencyWrapper {
@@ -97,4 +102,30 @@ button {
     width: 95px;
 }
 
+.dateLink {
+    color: #0a66c2;
+    text-decoration: underline;
+    cursor: pointer;
+}
 
+.dateLink:hover {
+    color: #063a6b;
+}
+
+#displayDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#searchDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#editDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
