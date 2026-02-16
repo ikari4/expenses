@@ -209,7 +209,11 @@ function addNewExpense(expense = null) {
         saveBtn.disabled = false;
         saveBtn.innerHTML = expense ? "Update" : "Save";
         alert("Expense saved!");
-        if (!expense) clearExpenseForm();
+        if (!expense) {
+            clearExpenseForm();
+        } else {
+            viewBtn.click();
+        }
     });
 
 
@@ -266,7 +270,6 @@ function searchExpenses() {
     searchDiv.appendChild(toDiv);
 
     // setup view button
-    const viewBtn = document.createElement("button");
     viewBtn.textContent = "View";
     viewBtn.classList = "saveBtn";
     searchDiv.appendChild(viewBtn);
@@ -295,7 +298,6 @@ function searchExpenses() {
         body: JSON.stringify(viewData)
     });
     const expensesToView = await viewRes.json();
-    console.log(expensesToView);
     viewBtn.innerHTML = "View";
     viewBtn.disabled = false;
 
@@ -456,7 +458,6 @@ function displayExpenses(expensesToView) {
 
     // each expense info goes into a single table cell
     expensesToView.sort((a, b) => new Date(a.date) - new Date(b.date));
-    console.log(expensesToView);
     expensesToView.forEach(expense => {
         const row = document.createElement("tr");
         
@@ -497,6 +498,8 @@ const addDiv = document.getElementById("addDiv");
 const searchDiv = document.getElementById("searchDiv");
 const displayDiv = document.getElementById("displayDiv");
 const editDiv = document.getElementById("editDiv");
+const viewBtn = document.createElement("button");
+
 
 // on page load
 window.addEventListener("load", async() => {
