@@ -7,7 +7,7 @@ body {
 
 .inputRow {
     display: flex;
-    width: 390px;
+    width: 370px;
     font-size: 20px;
     flex-direction: column;
     align-items: center;
@@ -21,7 +21,7 @@ body {
 #outerDiv {
     display: flex;
     flex-direction: column;
-    width: 390px;
+    width: 370px;
     align-items: center;
 }
 
@@ -32,13 +32,13 @@ body {
 }
 
 .blueLine {
-    width: 390px;
+    width: 370px;
     color: #033f63;
     margin: 0;
 }
 
 .yellowLine {
-    width: 390px;
+    width: 370px;
     border: none;
     height: 5px;
     background-color: #fedc97;
@@ -68,7 +68,7 @@ body {
 
 button {
     height: 40px;
-    width: 110px;
+    width: 90px;
     font-size: 20px;
     background-color: #033f63;
     color: #fedc97;
