@@ -113,13 +113,16 @@ button {
 }
 
 .expenseTable {
-    font-size: 16px;
+    font-size: 18px;
     margin-bottom: 15px;
 }
 
 .expenseTable th, tr {
     text-align: center;
-    width: 95px;
+}
+
+.expenseTable td {
+    padding: 0 15px;
 }
 
 .dateLink {

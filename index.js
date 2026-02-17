@@ -449,7 +449,7 @@ function displayExpenses(expensesToView) {
     const table = document.createElement("table");
     table.className = "expenseTable";
     const headerRow = document.createElement("tr");
-    ["Date", "Amount", "Category", "Payment"].forEach(text => {
+    ["Date", "Amount", "Payment"].forEach(text => {
         const th = document.createElement("th");
         th.textContent = text;
         headerRow.appendChild(th);
@@ -466,7 +466,6 @@ function displayExpenses(expensesToView) {
         const values = [
             expense.date,
             formattedAmount,
-            expense.category,
             expense.payment
         ];
          values.forEach((value, index) => {
