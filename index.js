@@ -136,7 +136,18 @@ function addNewExpense(expense = null) {
             }   
         });
     }
+
+    // reset button
+    const resetBtn = document.createElement("button");
+    resetBtn.textContent = "Reset";
+    btnRow.appendChild(resetBtn);
+
     addDiv.appendChild(btnRow);
+
+    // event listener for reset
+    resetBtn.addEventListener("click", () => {
+        location.reload();
+    })
 
     // clear form after saving
     function clearExpenseForm() {
