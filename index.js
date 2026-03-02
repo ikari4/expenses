@@ -340,6 +340,7 @@ function addNewOption() {
             alert("Please enter a category.");
             saveCatBtn.disabled = false;
             saveCatBtn.innerHTML = "Save";
+            addCategory.value = "";
             return;
         }
 
@@ -352,7 +353,9 @@ function addNewOption() {
             body: JSON.stringify(categoryData)
         });
         const result = await saveRes.json();
-        // editBtn.click();
+        saveCatBtn.disabled = false;
+        saveCatBtn.innerHTML = "Save";
+        addCategory.value = "";
         alert("Category saved!");
 
     });
@@ -383,6 +386,7 @@ function addNewOption() {
             alert("Please enter a payment type.");
             savePayBtn.disabled = false;
             savePayBtn.innerHTML = "Save";
+            addPaymentType.value = "";
             return;
         }
 
@@ -395,6 +399,9 @@ function addNewOption() {
             body: JSON.stringify(paymentData)
         });
         const result = await saveRes.json();
+        savePayBtn.disabled = false;
+        savePayBtn.innerHTML = "Save";
+        addPaymentType.value = "";
         alert("Payment type saved!");
 
     });
